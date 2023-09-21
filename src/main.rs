@@ -2,21 +2,14 @@ use rand::Rng;
 use std::io;
 
 fn main() -> () {
-    let words = ["flower", "cola", "pirate"];
-    let mut guess_chars: String = String::new();
-    let mut rng = rand::thread_rng();
     let mut lives_left = 3;
+    let words = ["flower", "cola", "pirate"];
 
-    let random_index = rng.gen_range(0..words.len());
-
-    let word_to_guess = match words.get(random_index) {
-        Some(word) => word,
-        None => unreachable!(),
-    };
-
-    let word_length = word_to_guess.len();
-
+    let random_word = select_random_item(&words).expect("Empty list!");
+    let word_length = random_word.len();
     let mut obfuscated_word: Vec<char> = std::iter::repeat('_').take(word_length).collect();
+
+    let mut guess_chars: String = String::new();
 
     while lives_left > 0 {
         println!("\n ========== \n");
@@ -40,12 +33,12 @@ fn main() -> () {
             continue;
         }
 
-        let success = word_to_guess.contains(&guess.to_lowercase().trim());
+        let success = random_word.contains(&guess.to_lowercase().trim());
 
         if success {
             let mut indexes = vec![];
 
-            for (idx, char) in word_to_guess.chars().enumerate() {
+            for (idx, char) in random_word.chars().enumerate() {
                 if char.to_string() == guess.to_lowercase().trim() {
                     indexes.push(idx);
                 }
@@ -74,7 +67,15 @@ fn main() -> () {
     if lives_left == 0 {
         println!(
             "Game over. You are out of lives.\n The word was: {}",
-            word_to_guess
+            random_word
         );
     }
+}
+
+fn select_random_item<T>(list: &[T]) -> Option<&T> {
+    let mut rng = rand::thread_rng();
+
+    let random_index = rng.gen_range(0..list.len());
+
+    return list.get(random_index);
 }
