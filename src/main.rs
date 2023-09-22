@@ -24,27 +24,25 @@ impl Game {
             guessed_letters: Vec::with_capacity(max_attempts as usize),
         }
     }
-}
 
-fn main() -> () {
-    let words = ["flower", "cola", "pirate"];
-    let secret_word = select_random_item(&words).expect("Empty list!").to_string();
-    let max_attempts: i8 = 5;
+    fn has_won(&mut self) -> bool {
+        self.secret_word
+            .chars()
+            .all(|c| self.guessed_letters.contains(&c))
+    }
 
-    let mut game = Game::new(secret_word, max_attempts);
+    fn has_lost(&mut self) -> bool {
+        self.attempts_left == 0
+    }
 
-    // Make a make_guess method here...
-    while game.state == GameState::InProgress {
+    fn get_guess(&mut self) -> String {
         println!("\n ========== \n");
 
-        println!("Attempts left: {}", game.attempts_left);
-        println!(
-            "Word: {}",
-            get_display_word(&game.secret_word, &game.guessed_letters)
-        );
+        println!("Attempts left: {}", self.attempts_left);
+        println!("Word: {}", self.get_display_word());
         println!(
             "Chars guessed: {}",
-            game.guessed_letters.iter().collect::<String>()
+            self.guessed_letters.iter().collect::<String>()
         );
 
         let mut guess = String::from("");
@@ -55,7 +53,65 @@ fn main() -> () {
             .read_line(&mut guess)
             .expect("Failed to read line");
 
-        let guess = guess.trim().to_string();
+        guess.trim().to_string()
+    }
+
+    fn evaluate_guess(&mut self, letter: char) -> () {
+        self.guessed_letters.push(letter);
+
+        match self.secret_word.contains(letter) {
+            true => {
+                if self.has_won() == true {
+                    self.state = GameState::Won;
+                }
+            }
+            false => {
+                self.attempts_left -= 1;
+                if self.has_lost() {
+                    self.state = GameState::Lost;
+                }
+            }
+        }
+    }
+
+    fn get_display_word(&mut self) -> String {
+        self.secret_word
+            .chars()
+            .map(|c| {
+                if self.guessed_letters.contains(&c) {
+                    c
+                } else {
+                    '_'
+                }
+            })
+            .collect::<String>()
+    }
+
+    fn check_winner(&mut self) -> () {
+        match self.state {
+            GameState::Won => println!(
+                "Congratulations! You guessed the word: {}",
+                self.secret_word
+            ),
+            GameState::Lost => println!(
+                "Sorry, you ran out of attempts. The word was: {}",
+                self.secret_word
+            ),
+            _ => (),
+        }
+    }
+}
+
+fn main() -> () {
+    // TODO: Get the words from an API?
+    let words = ["flower", "cola", "pirate"];
+    let secret_word = select_random_item(&words).expect("Empty list!").to_string();
+    let max_attempts: i8 = 5;
+
+    let mut game = Game::new(secret_word, max_attempts);
+
+    while game.state == GameState::InProgress {
+        let guess = game.get_guess();
 
         if guess.len() > 1 {
             println!("Only 1 character is allowed");
@@ -63,40 +119,11 @@ fn main() -> () {
         }
 
         if let Some(letter) = guess.chars().next() {
-            game.guessed_letters.push(letter);
-
-            let success = game.secret_word.contains(&guess.to_lowercase().trim());
-
-            if success {
-                match game
-                    .secret_word
-                    .chars()
-                    .all(|c| game.guessed_letters.contains(&c))
-                {
-                    true => game.state = GameState::Won,
-                    false => continue,
-                }
-            } else {
-                game.attempts_left -= 1;
-                if game.attempts_left == 0 {
-                    game.state = GameState::Lost;
-                    break;
-                }
-            }
+            game.evaluate_guess(letter)
         }
     }
-    // Should this be one the struct?
-    match game.state {
-        GameState::Won => println!(
-            "Congratulations! You guessed the word: {}",
-            game.secret_word
-        ),
-        GameState::Lost => println!(
-            "Sorry, you ran out of attempts. The word was: {}",
-            game.secret_word
-        ),
-        _ => (),
-    }
+
+    game.check_winner();
 }
 
 fn select_random_item<T>(list: &[T]) -> Option<&T> {
@@ -105,11 +132,4 @@ fn select_random_item<T>(list: &[T]) -> Option<&T> {
     let random_index = rng.gen_range(0..list.len());
 
     return list.get(random_index);
-}
-
-fn get_display_word(secret_word: &str, guessed_letters: &[char]) -> String {
-    secret_word
-        .chars()
-        .map(|c| if guessed_letters.contains(&c) { c } else { '_' })
-        .collect::<String>()
 }
