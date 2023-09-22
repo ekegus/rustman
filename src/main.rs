@@ -1,22 +1,42 @@
 use rand::Rng;
 use std::io;
 
+#[derive(PartialEq)]
+enum GameState {
+    InProgress,
+    Won,
+    Lost,
+}
+
+struct Game {
+    attempts_left: i32,
+    state: GameState,
+    secret_word: String,
+}
+
 fn main() -> () {
-    let mut lives_left = 3;
     let words = ["flower", "cola", "pirate"];
 
-    let random_word = select_random_item(&words).expect("Empty list!");
-    let word_length = random_word.len();
-    let mut obfuscated_word: Vec<char> = std::iter::repeat('_').take(word_length).collect();
+    let mut game = Game {
+        attempts_left: 3,
+        state: GameState::InProgress,
+        secret_word: select_random_item(&words).expect("Empty list!").to_string(),
+    };
 
-    let mut guess_chars: String = String::new();
+    let mut guessed_letters: Vec<char> = vec![];
 
-    while lives_left > 0 {
+    while game.state == GameState::InProgress {
         println!("\n ========== \n");
 
-        println!("Lives: {}", lives_left);
-        println!("Word: {}", obfuscated_word.iter().collect::<String>());
-        println!("Chars guessed: {}", guess_chars);
+        println!("Attempts left: {}", game.attempts_left);
+        println!(
+            "Word: {}",
+            get_display_word(&game.secret_word, &guessed_letters)
+        );
+        println!(
+            "Chars guessed: {}",
+            guessed_letters.iter().collect::<String>()
+        );
 
         let mut guess = String::from("");
 
@@ -26,49 +46,46 @@ fn main() -> () {
             .read_line(&mut guess)
             .expect("Failed to read line");
 
-        guess_chars.push_str(&format!("{} ", &guess.trim()).to_string());
+        let guess = guess.trim().to_string();
 
-        if guess.trim().len() > 1 {
+        if guess.len() > 1 {
             println!("Only 1 character is allowed");
             continue;
         }
 
-        let success = random_word.contains(&guess.to_lowercase().trim());
+        if let Some(letter) = guess.chars().next() {
+            guessed_letters.push(letter);
 
-        if success {
-            let mut indexes = vec![];
+            let success = game.secret_word.contains(&guess.to_lowercase().trim());
 
-            for (idx, char) in random_word.chars().enumerate() {
-                if char.to_string() == guess.to_lowercase().trim() {
-                    indexes.push(idx);
+            if success {
+                match game
+                    .secret_word
+                    .chars()
+                    .all(|c| guessed_letters.contains(&c))
+                {
+                    true => game.state = GameState::Won,
+                    false => continue,
+                }
+            } else {
+                game.attempts_left -= 1;
+                if game.attempts_left == 0 {
+                    game.state = GameState::Lost;
+                    break;
                 }
             }
-
-            for idx in indexes.iter() {
-                let guessed_char = guess
-                    .chars()
-                    .next()
-                    .expect("Failed to update obfuscated word.");
-                println!("{}", guessed_char);
-                obfuscated_word[*idx] = guessed_char;
-            }
-
-            if obfuscated_word.iter().all(|x| x != &'_') {
-                println!("You won.");
-                break;
-            };
-
-            continue;
-        } else {
-            lives_left -= 1;
         }
     }
-
-    if lives_left == 0 {
-        println!(
-            "Game over. You are out of lives.\n The word was: {}",
-            random_word
-        );
+    match game.state {
+        GameState::Won => println!(
+            "Congratulations! You guessed the word: {}",
+            game.secret_word
+        ),
+        GameState::Lost => println!(
+            "Sorry, you ran out of attempts. The word was: {}",
+            game.secret_word
+        ),
+        _ => (),
     }
 }
 
@@ -78,4 +95,11 @@ fn select_random_item<T>(list: &[T]) -> Option<&T> {
     let random_index = rng.gen_range(0..list.len());
 
     return list.get(random_index);
+}
+
+fn get_display_word(secret_word: &str, guessed_letters: &[char]) -> String {
+    secret_word
+        .chars()
+        .map(|c| if guessed_letters.contains(&c) { c } else { '_' })
+        .collect::<String>()
 }
