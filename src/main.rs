@@ -9,33 +9,42 @@ enum GameState {
 }
 
 struct Game {
-    attempts_left: i32,
+    attempts_left: i8,
     state: GameState,
     secret_word: String,
+    guessed_letters: Vec<char>,
+}
+
+impl Game {
+    fn new(secret_word: String, max_attempts: i8) -> Self {
+        Game {
+            attempts_left: max_attempts,
+            state: GameState::InProgress,
+            secret_word,
+            guessed_letters: Vec::with_capacity(max_attempts as usize),
+        }
+    }
 }
 
 fn main() -> () {
     let words = ["flower", "cola", "pirate"];
+    let secret_word = select_random_item(&words).expect("Empty list!").to_string();
+    let max_attempts: i8 = 5;
 
-    let mut game = Game {
-        attempts_left: 3,
-        state: GameState::InProgress,
-        secret_word: select_random_item(&words).expect("Empty list!").to_string(),
-    };
+    let mut game = Game::new(secret_word, max_attempts);
 
-    let mut guessed_letters: Vec<char> = vec![];
-
+    // Make a make_guess method here...
     while game.state == GameState::InProgress {
         println!("\n ========== \n");
 
         println!("Attempts left: {}", game.attempts_left);
         println!(
             "Word: {}",
-            get_display_word(&game.secret_word, &guessed_letters)
+            get_display_word(&game.secret_word, &game.guessed_letters)
         );
         println!(
             "Chars guessed: {}",
-            guessed_letters.iter().collect::<String>()
+            game.guessed_letters.iter().collect::<String>()
         );
 
         let mut guess = String::from("");
@@ -54,7 +63,7 @@ fn main() -> () {
         }
 
         if let Some(letter) = guess.chars().next() {
-            guessed_letters.push(letter);
+            game.guessed_letters.push(letter);
 
             let success = game.secret_word.contains(&guess.to_lowercase().trim());
 
@@ -62,7 +71,7 @@ fn main() -> () {
                 match game
                     .secret_word
                     .chars()
-                    .all(|c| guessed_letters.contains(&c))
+                    .all(|c| game.guessed_letters.contains(&c))
                 {
                     true => game.state = GameState::Won,
                     false => continue,
@@ -76,6 +85,7 @@ fn main() -> () {
             }
         }
     }
+    // Should this be one the struct?
     match game.state {
         GameState::Won => println!(
             "Congratulations! You guessed the word: {}",
