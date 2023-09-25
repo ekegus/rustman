@@ -1,12 +1,21 @@
+use core::panic;
+
 use hangman_cli::{Game, GameState};
 use reqwest::Error;
 use serde_json::Value;
 
 fn main() -> () {
     let url = "https:random-word-api.herokuapp.com/word";
-    let data = fetch_data(url).expect("Failed to call api");
 
-    let secret_word = parse_word_from_json(data.as_str()).expect("No word");
+    let data = match fetch_data(url) {
+        Ok(data) => data,
+        Err(error) => panic!("Failed to make API call: {}", error),
+    };
+
+    let secret_word = match parse_word_from_json(data.as_str()) {
+        Some(word) => word,
+        None => panic!("Failed to parse word from json."),
+    };
 
     let max_attempts: i8 = 5;
 
