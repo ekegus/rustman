@@ -1,13 +1,13 @@
 use hangman_cli::{Game, GameState};
-use rand::Rng;
+use reqwest::Error;
+use serde_json::Value;
 
 fn main() -> () {
-    // TODO: Get the words from an API?
-    // https://developer.wordnik.com/
-    // https://random-word-api.herokuapp.com/word
+    let url = "https:random-word-api.herokuapp.com/word";
+    let data = fetch_data(url).expect("Failed to call api");
 
-    let words = ["flower", "cola", "pirate"];
-    let secret_word = select_random_item(&words).expect("Empty list!").to_string();
+    let secret_word = parse_word_from_json(data.as_str()).expect("No word");
+
     let max_attempts: i8 = 5;
 
     let mut game = Game::new(secret_word, max_attempts);
@@ -16,7 +16,6 @@ fn main() -> () {
         let guess = game.get_guess();
 
         if guess.len() > 1 {
-            println!("Only 1 character is allowed");
             continue;
         }
 
@@ -28,10 +27,23 @@ fn main() -> () {
     game.check_winner();
 }
 
-fn select_random_item<T>(list: &[T]) -> Option<&T> {
-    let mut rng = rand::thread_rng();
+fn fetch_data(url: &str) -> Result<String, Error> {
+    let body = reqwest::blocking::get(url)?.text()?;
 
-    let random_index = rng.gen_range(0..list.len());
+    return Ok(body);
+}
 
-    return list.get(random_index);
+fn parse_word_from_json(json_str: &str) -> Option<String> {
+    let json_value: Result<Value, _> = serde_json::from_str(json_str);
+
+    match json_value {
+        Ok(value) => {
+            if let Some(word) = value.as_array()?.get(0)?.as_str() {
+                Some(word.to_string())
+            } else {
+                None
+            }
+        }
+        Err(_) => None,
+    }
 }
