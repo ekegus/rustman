@@ -56,6 +56,6 @@ The RustMan project is organized as follows:
 
 ## Todo
 
-- [] Fetch the words from an API.
-- [] The game logic into game.rs ? 
+- [x] Fetch the words from an API.
+- [x] The game logic into game.rs ? 
 - [] Write some tests
