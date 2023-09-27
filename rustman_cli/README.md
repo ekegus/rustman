@@ -58,4 +58,5 @@ The RustMan project is organized as follows:
 
 - [x] Fetch the words from an API.
 - [x] The game logic into game.rs ? 
+- [] Reshuffle directory structure so I have a lib and a bin crate
 - [] Write some tests

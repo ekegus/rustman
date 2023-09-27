@@ -1,7 +1,5 @@
-use core::panic;
-
-use hangman_cli::{Game, GameState};
 use reqwest::Error;
+use rustman_core::{Game, GameState};
 use serde_json::Value;
 
 fn main() -> () {
