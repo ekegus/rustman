@@ -1,5 +1,5 @@
 use reqwest::Error;
-use rustman_core::{Game, GameState};
+use rustman_core::{Game, GameOutcome, GameState};
 use serde_json::Value;
 
 fn main() -> () {
@@ -31,7 +31,20 @@ fn main() -> () {
         }
     }
 
-    game.check_winner();
+    let outcome = game.check_winner();
+
+    match outcome {
+        GameOutcome::Winner(secret_word) => {
+            println!("Congratulations! You guessed the word: {}", secret_word)
+        }
+        GameOutcome::Loser(secret_word) => {
+            println!(
+                "Sorry, you ran out of attempts. The word was: {}",
+                secret_word
+            )
+        }
+        GameOutcome::InProgress => (),
+    }
 }
 
 fn fetch_data(url: &str) -> Result<String, Error> {

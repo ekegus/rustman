@@ -7,6 +7,12 @@ pub enum GameState {
     Lost,
 }
 
+pub enum GameOutcome {
+    Winner(String),
+    Loser(String),
+    InProgress,
+}
+
 pub struct Game {
     attempts_left: i8,
     state: GameState,
@@ -90,17 +96,11 @@ impl Game {
             .collect::<String>()
     }
 
-    pub fn check_winner(&mut self) -> () {
+    pub fn check_winner(&mut self) -> GameOutcome {
         match self.state {
-            GameState::Won => println!(
-                "Congratulations! You guessed the word: {}",
-                self.secret_word
-            ),
-            GameState::Lost => println!(
-                "Sorry, you ran out of attempts. The word was: {}",
-                self.secret_word
-            ),
-            _ => (),
+            GameState::Won => GameOutcome::Winner(self.secret_word.clone()),
+            GameState::Lost => GameOutcome::Loser(self.secret_word.clone()),
+            _ => GameOutcome::InProgress,
         }
     }
 }
