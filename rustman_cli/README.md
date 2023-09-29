@@ -2,7 +2,7 @@
 
 ## Introduction
 
-RustMan is a simple hangman game implemented in the Rust programming language. 
+RustMan is a simple hangman game implemented in the Rust programming language.
 
 This project was created with the primary goal of learning and improving my Rust programming skills.
 
@@ -57,6 +57,9 @@ The RustMan project is organized as follows:
 ## Todo
 
 - [x] Fetch the words from an API.
-- [x] The game logic into game.rs ? 
-- [] Reshuffle directory structure so I have a lib and a bin crate
+- [x] The game logic into game.rs ?
+- [x] Reshuffle directory structure so I have a lib and a bin crate
+- [] Separate concerns: Keep CLI logic in the rustman_cli and the game logic in rustman_core.
+- [] Refactor rustman_cli so that it isn't one long function of gibberish.
+- [] Move the api helpers into a separate lib module.
 - [] Write some tests

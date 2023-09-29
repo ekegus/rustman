@@ -1,5 +1,3 @@
-use std::io;
-
 #[derive(PartialEq)]
 pub enum GameState {
     InProgress,
@@ -14,10 +12,10 @@ pub enum GameOutcome {
 }
 
 pub struct Game {
-    attempts_left: i8,
+    pub attempts_left: i8,
+    pub guessed_letters: Vec<char>,
     state: GameState,
     secret_word: String,
-    guessed_letters: Vec<char>,
 }
 
 impl Game {
@@ -44,23 +42,8 @@ impl Game {
         self.attempts_left == 0
     }
 
-    pub fn get_guess(&mut self) -> String {
-        println!("\n ========== \n");
-
-        println!("Attempts left: {}", self.attempts_left);
-        println!("Word: {}", self.get_display_word());
-        println!(
-            "Chars guessed: {}",
-            self.guessed_letters.iter().collect::<String>()
-        );
-
-        let mut guess = String::from("");
-
-        println!("Please make a guess...");
-
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("Failed to read line");
+    pub fn get_guess(&mut self, ui_handler: impl Fn(&str) -> String) -> String {
+        let guess = ui_handler("Make a guess...");
 
         guess.trim().to_string()
     }

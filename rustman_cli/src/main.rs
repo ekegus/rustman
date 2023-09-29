@@ -1,6 +1,7 @@
 use reqwest::Error;
 use rustman_core::{Game, GameOutcome, GameState};
 use serde_json::Value;
+use std::io;
 
 fn main() -> () {
     let url = "https:random-word-api.herokuapp.com/word";
@@ -19,8 +20,27 @@ fn main() -> () {
 
     let mut game = Game::new(secret_word, max_attempts);
 
+    let handler = |input: &str| -> String {
+        let mut guess = String::from("");
+
+        println!("{}", input);
+
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
+
+        return guess;
+    };
+
     while *game.get_game_state() == GameState::InProgress {
-        let guess = game.get_guess();
+        println!("Attempts left: {}", game.attempts_left);
+        println!("Word: {}", game.get_display_word());
+        println!(
+            "Chars guessed: {}",
+            &game.guessed_letters.iter().collect::<String>()
+        );
+
+        let guess = game.get_guess(handler);
 
         if guess.len() > 1 {
             continue;
