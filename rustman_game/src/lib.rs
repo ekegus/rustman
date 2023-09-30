@@ -79,7 +79,7 @@ impl Game {
             .collect::<String>()
     }
 
-    pub fn check_winner(&mut self) -> GameOutcome {
+    pub fn evaluate_game_outcome(&mut self) -> GameOutcome {
         match self.state {
             GameState::Won => GameOutcome::Winner(self.secret_word.clone()),
             GameState::Lost => GameOutcome::Loser(self.secret_word.clone()),
