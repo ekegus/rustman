@@ -1,7 +1,8 @@
-use reqwest::Error;
+use rustman_api::{fetch_data, parse_word_from_json};
 use rustman_core::{Game, GameOutcome, GameState};
-use serde_json::Value;
 use std::io;
+
+const MAX_ATTEMPTS: i8 = 5;
 
 fn main() -> () {
     let url = "https:random-word-api.herokuapp.com/word";
@@ -16,9 +17,7 @@ fn main() -> () {
         None => panic!("Failed to parse word from json."),
     };
 
-    let max_attempts: i8 = 5;
-
-    let mut game = Game::new(secret_word, max_attempts);
+    let mut game = Game::new(secret_word, MAX_ATTEMPTS);
 
     let handler = |input: &str| -> String {
         let mut guess = String::from("");
@@ -64,26 +63,5 @@ fn main() -> () {
             )
         }
         GameOutcome::InProgress => (),
-    }
-}
-
-fn fetch_data(url: &str) -> Result<String, Error> {
-    let body = reqwest::blocking::get(url)?.text()?;
-
-    return Ok(body);
-}
-
-fn parse_word_from_json(json_str: &str) -> Option<String> {
-    let json_value: Result<Value, _> = serde_json::from_str(json_str);
-
-    match json_value {
-        Ok(value) => {
-            if let Some(word) = value.as_array()?.get(0)?.as_str() {
-                Some(word.to_string())
-            } else {
-                None
-            }
-        }
-        Err(_) => None,
     }
 }

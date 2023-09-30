@@ -2,6 +2,7 @@
 members = [
     "rustman_core",
     "rustman_cli",
+    "rustman_api",
 ]
 resolver = "2"
 

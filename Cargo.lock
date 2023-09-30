@@ -660,14 +660,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustman_api"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "rustman_cli"
 version = "0.1.0"
 dependencies = [
  "rand",
- "reqwest",
+ "rustman_api",
  "rustman_core",
- "serde",
- "serde_json",
 ]
 
 [[package]]
