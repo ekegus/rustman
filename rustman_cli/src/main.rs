@@ -1,5 +1,5 @@
 use rustman_api::{fetch_data, parse_word_from_json};
-use rustman_core::{Game, GameOutcome, GameState};
+use rustman_game::{Game, GameOutcome, GameState};
 use std::io;
 
 const MAX_ATTEMPTS: i8 = 5;

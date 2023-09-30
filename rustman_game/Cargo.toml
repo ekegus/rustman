@@ -1,9 +1,9 @@
 [package]
-name = "rustman_core"
+name = "rustman_game"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 
 [lib]
-name = "rustman_core"
+name = "rustman_game"

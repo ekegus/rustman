@@ -674,11 +674,11 @@ version = "0.1.0"
 dependencies = [
  "rand",
  "rustman_api",
- "rustman_core",
+ "rustman_game",
 ]
 
 [[package]]
-name = "rustman_core"
+name = "rustman_game"
 version = "0.1.0"
 
 [[package]]

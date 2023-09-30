@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "rustman_core",
+    "rustman_game",
     "rustman_cli",
     "rustman_api",
 ]
