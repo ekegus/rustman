@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use rustman_api::{fetch_data, parse_word_from_json};
 use rustman_game::{Game, GameOutcome, GameState};
-use std::io;
+use std::io::{self, Write};
 
 const MAX_ATTEMPTS: i8 = 5;
 const URL: &str = "https:random-word-api.herokuapp.com/word";
@@ -15,19 +15,19 @@ fn get_secret_word() -> Result<String> {
     Ok(secret_word)
 }
 
-fn get_user_input(user_instruction: &str) -> String {
-    let mut user_input = String::from("");
-
+fn get_user_input(user_instruction: &str) -> Result<String, io::Error> {
     println!("{}", user_instruction);
 
-    io::stdin()
-        .read_line(&mut user_input)
-        .expect("Failed to read line");
+    let mut user_input = String::from("");
 
-    user_input.trim().to_string()
+    io::stdout().flush()?;
+
+    io::stdin().read_line(&mut user_input)?;
+
+    Ok(user_input.trim().to_string())
 }
 
-fn play_game(mut game: Game) -> Game {
+fn play_game(mut game: Game) -> Result<Game, io::Error> {
     while *game.get_game_state() == GameState::InProgress {
         println!("Attempts left: {}", game.attempts_left);
         println!("Word: {}", game.get_display_word());
@@ -36,7 +36,7 @@ fn play_game(mut game: Game) -> Game {
             &game.guessed_letters.iter().collect::<String>()
         );
 
-        let guess = game.get_guess(get_user_input);
+        let guess = get_user_input("Please make a guess...")?;
 
         if guess.len() > 1 {
             continue;
@@ -47,15 +47,15 @@ fn play_game(mut game: Game) -> Game {
         }
     }
 
-    return game;
+    return Ok(game);
 }
 
-fn main() -> () {
+fn main() -> Result<(), io::Error> {
     match get_secret_word() {
         Ok(secret_word) => {
             let game = Game::new(secret_word, MAX_ATTEMPTS);
 
-            let mut game = play_game(game);
+            let mut game = play_game(game)?;
 
             let game_outcome = game.evaluate_game_outcome();
 
@@ -74,4 +74,6 @@ fn main() -> () {
         }
         Err(error) => eprintln!("{}", error),
     }
+
+    Ok(())
 }

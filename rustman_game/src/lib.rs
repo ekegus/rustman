@@ -42,12 +42,6 @@ impl Game {
         self.attempts_left == 0
     }
 
-    pub fn get_guess(&mut self, ui_handler: impl Fn(&str) -> String) -> String {
-        let guess = ui_handler("Make a guess...");
-
-        guess.trim().to_string()
-    }
-
     pub fn evaluate_guess(&mut self, letter: char) -> () {
         self.guessed_letters.push(letter);
 
