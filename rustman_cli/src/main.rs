@@ -27,29 +27,33 @@ fn get_user_input(user_instruction: &str) -> anyhow::Result<String> {
     Ok(user_input.trim().to_string())
 }
 
-fn play_game(mut game: Game) -> anyhow::Result<()> {
-    while *game.get_game_state() == GameState::InProgress {
-        println!("Attempts left: {}", game.attempts_left);
-        println!("Word: {}", game.get_display_word());
-        println!(
-            "Chars guessed: {}",
-            &game.guessed_letters.iter().collect::<String>()
-        );
+fn play_round(game: &mut Game) -> ::anyhow::Result<()> {
+    println!("Attempts left: {}", game.attempts_left);
+    println!("Word: {}", game.get_display_word());
+    println!(
+        "Chars guessed: {}",
+        &game.guessed_letters.iter().collect::<String>()
+    );
 
-        let guess = get_user_input("Please make a guess...")?;
+    let guess = get_user_input("Please make a guess...")?;
 
-        if guess.len() > 1 {
-            continue;
-        }
-
-        if let Some(letter) = guess.chars().next() {
-            game.evaluate_guess(letter)
-        }
+    if guess.len() > 1 {
+        return Ok(());
     }
 
-    let game_outcome = game.evaluate_game_outcome();
+    if let Some(letter) = guess.chars().next() {
+        game.evaluate_guess(letter);
+    }
 
-    match game_outcome {
+    Ok(())
+}
+
+fn play_game(mut game: Game) -> anyhow::Result<()> {
+    while *game.get_game_state() == GameState::InProgress {
+        play_round(&mut game)?;
+    }
+
+    match game.evaluate_game_outcome() {
         GameOutcome::Winner(secret_word) => {
             println!("Congratulations! You guessed the word: {}", secret_word)
         }
