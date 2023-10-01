@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use rustman_api::{fetch_data, parse_word_from_json};
 use rustman_game::{Game, GameOutcome, GameState};
 use std::io;
@@ -5,17 +6,13 @@ use std::io;
 const MAX_ATTEMPTS: i8 = 5;
 const URL: &str = "https:random-word-api.herokuapp.com/word";
 
-fn get_secret_word() -> String {
-    let data = match fetch_data(URL) {
-        Ok(data) => data,
-        Err(error) => panic!("Failed to make API call: {}", error),
-    };
-    let secret_word = match parse_word_from_json(data.as_str()) {
-        Some(word) => word,
-        None => panic!("Failed to parse word from json."),
-    };
+fn get_secret_word() -> Result<String> {
+    let data = fetch_data(URL).map_err(|error| anyhow!("Failed to make API call: {}", error))?;
 
-    return secret_word;
+    let secret_word =
+        parse_word_from_json(data.as_str()).ok_or(anyhow!("Failed to parse word from json"))?;
+
+    Ok(secret_word)
 }
 
 fn get_user_input(user_instruction: &str) -> String {
@@ -27,7 +24,7 @@ fn get_user_input(user_instruction: &str) -> String {
         .read_line(&mut user_input)
         .expect("Failed to read line");
 
-    return user_input;
+    user_input.trim().to_string()
 }
 
 fn play_game(mut game: Game) -> Game {
@@ -54,23 +51,27 @@ fn play_game(mut game: Game) -> Game {
 }
 
 fn main() -> () {
-    let secret_word = get_secret_word();
-    let game = Game::new(secret_word, MAX_ATTEMPTS);
+    match get_secret_word() {
+        Ok(secret_word) => {
+            let game = Game::new(secret_word, MAX_ATTEMPTS);
 
-    let mut game = play_game(game);
+            let mut game = play_game(game);
 
-    let game_outcome = game.evaluate_game_outcome();
+            let game_outcome = game.evaluate_game_outcome();
 
-    match game_outcome {
-        GameOutcome::Winner(secret_word) => {
-            println!("Congratulations! You guessed the word: {}", secret_word)
+            match game_outcome {
+                GameOutcome::Winner(secret_word) => {
+                    println!("Congratulations! You guessed the word: {}", secret_word)
+                }
+                GameOutcome::Loser(secret_word) => {
+                    println!(
+                        "Sorry, you ran out of attempts. The word was: {}",
+                        secret_word
+                    )
+                }
+                GameOutcome::InProgress => (),
+            }
         }
-        GameOutcome::Loser(secret_word) => {
-            println!(
-                "Sorry, you ran out of attempts. The word was: {}",
-                secret_word
-            )
-        }
-        GameOutcome::InProgress => (),
+        Err(error) => eprintln!("{}", error),
     }
 }

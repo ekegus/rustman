@@ -7,3 +7,4 @@ edition = "2021"
 rustman_game = { path = "../rustman_game" }
 rustman_api = { path = "../rustman_api" }
 rand = "0.8.5"
+anyhow = "1.0.75"
