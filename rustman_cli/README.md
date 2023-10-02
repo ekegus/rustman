@@ -44,16 +44,6 @@ Once Rust and Cargo are installed, follow these steps to run RustMan:
 
 That's it! You're now ready to play RustMan.
 
-## Project Structure
-
-The RustMan project is organized as follows:
-
-- `src/`: This directory contains the Rust source code for the game.
-  - `main.rs`: The main entry point of the game.
-  - `game.rs`: The game logic, including word selection, guessing, and state management.
-- `Cargo.toml`: The project's manifest file that defines dependencies and configuration.
-- `README.md`: The project's README file, which you are currently reading.
-
 ## Todo
 
 - [x] Fetch the words from an API.
